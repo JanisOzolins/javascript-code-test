@@ -1,4 +1,10 @@
 import { BookSearchApiClient } from "../BookSearchApiClient";
+import {
+  markTwainJsonMockResponse,
+  markTwainTextResponse,
+  williamShakespeareJsonResponse,
+  williamShakespeareTextResponse,
+} from "./BookSearchApiClient.mock";
 
 describe("BookSearchApiClient", () => {
   afterEach(() => {
@@ -10,38 +16,12 @@ describe("BookSearchApiClient", () => {
       global.fetch = jest.fn(() =>
         Promise.resolve({
           status: 200,
-          json: () =>
-            Promise.resolve([
-              {
-                book: {
-                  title: "Romeo and Juliett",
-                  author: "William Shakespeare",
-                  isbn: 9789963512737,
-                },
-                stock: {
-                  quantity: 756,
-                  price: 19.99,
-                },
-              },
-              {
-                book: {
-                  title: "Hamlet",
-                  author: "William Shakespeare",
-                  isbn: 9788467033380,
-                },
-                stock: {
-                  quantity: 22,
-                  price: 5.99,
-                },
-              },
-            ]),
-          text: () =>
-            Promise.resolve(
-              `<root><results><item><book><author>William Shakespeare</author><isbn>9789963512737</isbn><title>Romeo and Juliett</title></book><stock><price>19.99</price><quantity>756</quantity></stock></item><item><book><author>William Shakespeare</author><isbn>9788467033380</isbn><title>Hamlet</title></book><stock><price>5.99</price><quantity>22</quantity></stock></item></results></root>`
-            ),
+          json: () => Promise.resolve(williamShakespeareJsonResponse),
+          text: () => Promise.resolve(williamShakespeareTextResponse),
         })
       ) as jest.Mock;
     });
+
     it("should build the request URL correctly", async () => {
       const service = new BookSearchApiClient("json");
 
@@ -102,35 +82,8 @@ describe("BookSearchApiClient", () => {
       global.fetch = jest.fn(() =>
         Promise.resolve({
           status: 200,
-          json: () =>
-            Promise.resolve([
-              {
-                book: {
-                  title: "Tom Sawyer Abroad",
-                  author: "Mark Tawin",
-                  isbn: 9287963232737,
-                },
-                stock: {
-                  quantity: 12,
-                  price: 14.5,
-                },
-              },
-              {
-                book: {
-                  title: "A Horse's Tale",
-                  author: "Mark Tawin",
-                  isbn: 7438467023380,
-                },
-                stock: {
-                  quantity: 1,
-                  price: 99.99,
-                },
-              },
-            ]),
-          text: () =>
-            Promise.resolve(
-              `<root><results><item><author>Mark Tawin</author><isbn>9287963232737</isbn><price>14.5</price><quantity>12</quantity><title>Tom Sawyer Abroad</title></item><item><author>Mark Tawin</author><isbn>7438467023380</isbn><price>99.99</price><quantity>1</quantity><title>A Horse's Tale</title></item></results></root>`
-            ),
+          json: () => Promise.resolve(markTwainJsonMockResponse),
+          text: () => Promise.resolve(markTwainTextResponse),
         })
       ) as jest.Mock;
     });

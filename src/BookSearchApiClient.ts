@@ -1,12 +1,11 @@
-export type BookFormatType = "json" | "xml";
+import {
+  BookFormatType,
+  BooksApiResponse,
+  Book,
+  BookApiObject,
+} from "./types/BookSearchApi.type";
+import { isBooksApiResponse } from "./utils/type-guards";
 
-export interface Book {
-  title: string;
-  author: string;
-  isbn: number;
-  quantity: number;
-  price: number;
-}
 export class BookSearchApiClient {
   format: BookFormatType;
   baseUrl: string = "http://api.book-seller-example.com";
@@ -25,7 +24,10 @@ export class BookSearchApiClient {
 
     const url = this.createUrlWithParams(getBooksByAuthorBaseUrl, queryParams);
 
-    return this.formatResponse(await this.fetcher(url));
+    const response: BooksApiResponse | string = await this.fetcher<
+      BooksApiResponse | string
+    >(url);
+    return this.formatResponse(response);
   }
 
   async getBooksByYear(year: number, limit: number) {
@@ -51,11 +53,10 @@ export class BookSearchApiClient {
     return fullURL.toString();
   }
 
-  // TODO: response type (array and string/XML)
-  formatResponse(data: any): any {
+  formatResponse(data: BooksApiResponse | string): Book[] {
     let results: Book[] = [];
-    if (this.format === "json") {
-      results = data.map(function (item) {
+    if (this.format === "json" && isBooksApiResponse(data)) {
+      results = data.results.map((item: BookApiObject) => {
         const book: Book = {
           title: item.book.title,
           author: item.book.author,
@@ -66,36 +67,45 @@ export class BookSearchApiClient {
 
         return book;
       });
-    } else {
+    } else if (this.format === "xml" && typeof data === "string") {
       const parser = new window.DOMParser();
       const xml = parser.parseFromString(data, "text/xml");
+      const errorNode = xml.querySelector("parsererror");
 
-      // <root> -> <results>
-      const items = xml.documentElement.childNodes[0];
+      if (errorNode) {
+        throw new Error("Error while trying to parse the XML file");
+      } else {
+        // results array
+        const items = xml.documentElement.getElementsByTagName("results")[0];
 
-      items.childNodes.forEach(function (item: HTMLElement) {
-        const author =
-          item.getElementsByTagName("author")[0].childNodes[0].nodeValue;
-        const title =
-          item.getElementsByTagName("title")[0].childNodes[0]?.nodeValue;
-        const isbn: number = Number(
-          item.getElementsByTagName("isbn")[0].childNodes[0]?.nodeValue
-        );
-        const quantity: number = Number(
-          item.getElementsByTagName("quantity")[0].childNodes[0]?.nodeValue
-        );
-        const price: number = Number(
-          item.getElementsByTagName("price")[0].childNodes[0]?.nodeValue
-        );
+        items.childNodes.forEach(function (item: HTMLElement) {
+          const author =
+            item.getElementsByTagName("author")[0].childNodes[0].nodeValue;
+          const title =
+            item.getElementsByTagName("title")[0].childNodes[0]?.nodeValue;
+          const isbn: number = Number(
+            item.getElementsByTagName("isbn")[0].childNodes[0]?.nodeValue
+          );
+          const quantity: number = Number(
+            item.getElementsByTagName("quantity")[0].childNodes[0]?.nodeValue
+          );
+          const price: number = Number(
+            item.getElementsByTagName("price")[0].childNodes[0]?.nodeValue
+          );
 
-        results.push({
-          author,
-          title,
-          isbn,
-          quantity,
-          price,
+          results.push({
+            author,
+            title,
+            isbn,
+            quantity,
+            price,
+          });
         });
-      });
+      }
+    } else {
+      throw new Error(
+        "Unsupported response - please make sure the API returns either a JSON Object or XML"
+      );
     }
 
     return results;
@@ -104,7 +114,7 @@ export class BookSearchApiClient {
   /**
    * generic fetcher function that accepts a full URL with query parameters
    */
-  async fetcher(url: string): Promise<any> {
+  async fetcher<T>(url: string): Promise<T> {
     let data;
     try {
       let res: Response = await fetch(url);
