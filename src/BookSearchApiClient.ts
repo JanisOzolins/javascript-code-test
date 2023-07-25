@@ -1,5 +1,14 @@
+export type BookFormatType = "json" | "xml";
+
+export interface Book {
+  title: string;
+  author: string;
+  isbn: number;
+  quantity: number;
+  price: number;
+}
 export class BookSearchApiClient {
-  format: string;
+  format: BookFormatType;
   baseUrl: string = "http://api.book-seller-example.com";
 
   constructor(format) {
@@ -16,7 +25,7 @@ export class BookSearchApiClient {
 
     const url = this.createUrlWithParams(getBooksByAuthorBaseUrl, queryParams);
 
-    return await this.fetcher(url);
+    return this.formatResponse(await this.fetcher(url));
   }
 
   async getBooksByYear(year: number, limit: number) {
@@ -29,7 +38,7 @@ export class BookSearchApiClient {
 
     const url = this.createUrlWithParams(getBooksByYearBaseUrl, queryParams);
 
-    return await this.fetcher(url);
+    return this.formatResponse(await this.fetcher(url));
   }
 
   createUrlWithParams(base: string, params: Map<string, string>): string {
@@ -40,6 +49,56 @@ export class BookSearchApiClient {
     });
     fullURL.searchParams.append("format", this.format);
     return fullURL.toString();
+  }
+
+  // TODO: response type (array and string/XML)
+  formatResponse(data: any): any {
+    let results: Book[] = [];
+    if (this.format === "json") {
+      results = data.map(function (item) {
+        const book: Book = {
+          title: item.book.title,
+          author: item.book.author,
+          isbn: Number(item.book.isbn),
+          quantity: Number(item.stock.quantity),
+          price: Number(item.stock.price),
+        };
+
+        return book;
+      });
+    } else {
+      const parser = new window.DOMParser();
+      const xml = parser.parseFromString(data, "text/xml");
+
+      // <root> -> <results>
+      const items = xml.documentElement.childNodes[0];
+
+      items.childNodes.forEach(function (item: HTMLElement) {
+        const author =
+          item.getElementsByTagName("author")[0].childNodes[0].nodeValue;
+        const title =
+          item.getElementsByTagName("title")[0].childNodes[0]?.nodeValue;
+        const isbn: number = Number(
+          item.getElementsByTagName("isbn")[0].childNodes[0]?.nodeValue
+        );
+        const quantity: number = Number(
+          item.getElementsByTagName("quantity")[0].childNodes[0]?.nodeValue
+        );
+        const price: number = Number(
+          item.getElementsByTagName("price")[0].childNodes[0]?.nodeValue
+        );
+
+        results.push({
+          author,
+          title,
+          isbn,
+          quantity,
+          price,
+        });
+      });
+    }
+
+    return results;
   }
 
   /**
@@ -54,7 +113,11 @@ export class BookSearchApiClient {
         throw new Error("Error occured when trying to fetch items" + url);
       }
 
-      data = res.json();
+      if (this.format === "xml") {
+        data = res.text();
+      } else {
+        data = res.json();
+      }
     } catch (error) {
       console.log((error as Error).message);
     }
