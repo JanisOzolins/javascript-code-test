@@ -10,7 +10,7 @@ export class BookSearchApiClient {
   format: BookFormatType;
   baseUrl: string = "http://api.book-seller-example.com";
 
-  constructor(format) {
+  constructor(format: BookFormatType) {
     this.format = format;
   }
 
@@ -27,7 +27,11 @@ export class BookSearchApiClient {
     const response: BooksApiResponse | string = await this.fetcher<
       BooksApiResponse | string
     >(url);
-    return this.formatResponse(response);
+    try {
+      return this.formatResponse(response);
+    } catch (error) {
+      throw new Error(error.message);
+    }
   }
 
   async getBooksByYear(year: number, limit: number) {
@@ -55,6 +59,7 @@ export class BookSearchApiClient {
 
   formatResponse(data: BooksApiResponse | string): Book[] {
     let results: Book[] = [];
+
     if (this.format === "json" && isBooksApiResponse(data)) {
       results = data.results.map((item: BookApiObject) => {
         const book: Book = {
@@ -104,7 +109,7 @@ export class BookSearchApiClient {
       }
     } else {
       throw new Error(
-        "Unsupported response - please make sure the API returns either a JSON Object or XML"
+        "Invalid response - please make sure the API returns either a valid JSON Object or XML"
       );
     }
 

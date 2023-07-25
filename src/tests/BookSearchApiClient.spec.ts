@@ -143,4 +143,39 @@ describe("BookSearchApiClient", () => {
       ]);
     });
   });
+
+  describe("Errors", () => {
+    beforeEach(() => {
+      global.fetch = jest.fn(() =>
+        Promise.resolve({
+          status: 200,
+          json: () => Promise.resolve("{results:{{}}"),
+          text: () => Promise.resolve(`<root><results></RESULTS></root>`),
+        })
+      ) as jest.Mock;
+    });
+
+    it("should throw an error if invalid XML", async () => {
+      const service = new BookSearchApiClient("xml");
+
+      try {
+        await service.getBooksByAuthor("Mark Twain", 10);
+      } catch (error) {
+        expect(error.message).toBe("Error while trying to parse the XML file");
+      }
+    });
+
+    it("should throw an error if incorrect format provided", async () => {
+      // @ts-ignore
+      const service = new BookSearchApiClient("randomformat");
+
+      try {
+        await service.getBooksByAuthor("Mark Twain", 10);
+      } catch (error) {
+        expect(error.message).toBe(
+          "Invalid response - please make sure the API returns either a valid JSON Object or XML"
+        );
+      }
+    });
+  });
 });
