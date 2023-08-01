@@ -1,8 +1,15 @@
 import { BookSearchApiClient } from "./BookSearchApiClient";
 
 async function retrieveData(): Promise<void> {
-  const api = new BookSearchApiClient("json");
-  const res = await api.getBooksByAuthor("Shakespeare", 10);
+  const bookSearchService = new BookSearchApiClient("json");
 
-  console.log(res);
+  try {
+    const response = await bookSearchService.getBooksByAuthor(
+      "Shakespeare",
+      10
+    );
+    console.log(response);
+  } catch (error) {
+    console.error(error.message);
+  }
 }
