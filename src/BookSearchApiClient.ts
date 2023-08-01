@@ -14,7 +14,13 @@ export class BookSearchApiClient {
     this.format = format;
   }
 
-  async getBooksByAuthor(authorName: string, limit: number) {
+  /**
+   * Retrieves a list of books matching the name of the author
+   * @param authorName author name
+   * @param limit query param to limit the number of results
+   * @returns an array of Book objects
+   */
+  async getBooksByAuthor(authorName: string, limit: number): Promise<Book[]> {
     // building a URL relevant for this  method
     const getBooksByAuthorBaseUrl = `${this.baseUrl}/by-author`;
     const queryParams = new Map<string, string>();
@@ -24,17 +30,23 @@ export class BookSearchApiClient {
 
     const url = this.createUrlWithParams(getBooksByAuthorBaseUrl, queryParams);
 
-    const response: BooksApiResponse | string = await this.fetcher<
-      BooksApiResponse | string
-    >(url);
     try {
+      const response: BooksApiResponse | string = await this.fetcher<
+        BooksApiResponse | string
+      >(url);
       return this.formatResponse(response);
     } catch (error) {
       throw new Error(error.message);
     }
   }
 
-  async getBooksByYear(year: number, limit: number) {
+  /**
+   * Retrieve a list of books matching the publication year
+   * @param year publication year of the book
+   * @param limit query param to limit the number of results
+   * @returns an array of Book objects
+   */
+  async getBooksByYear(year: number, limit: number): Promise<Book[]> {
     // building a URL relevant for this  method
     const getBooksByYearBaseUrl = `${this.baseUrl}/by-year`;
     const queryParams = new Map<string, string>();
@@ -44,7 +56,14 @@ export class BookSearchApiClient {
 
     const url = this.createUrlWithParams(getBooksByYearBaseUrl, queryParams);
 
-    return this.formatResponse(await this.fetcher(url));
+    try {
+      const response: BooksApiResponse | string = await this.fetcher<
+        BooksApiResponse | string
+      >(url);
+      return this.formatResponse(response);
+    } catch (error) {
+      throw new Error(error.message);
+    }
   }
 
   createUrlWithParams(base: string, params: Map<string, string>): string {
