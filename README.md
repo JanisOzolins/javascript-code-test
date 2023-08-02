@@ -12,8 +12,8 @@ To run unit tests, please run `npm run test`
 
 ```
 Retrieves a list of books matching the name of the author
-@param authorName author name
-@param limit query param to limit the number of results
+@param - authorName author name
+@param - limit query param to limit the number of results
 @returns an array of Book objects
 ```
 
@@ -23,7 +23,7 @@ Retrieves a list of books matching the name of the author
 Retrieve a list of books matching the publication year
 @param year — publication year of the book
 @param limit — query param to limit the number of results
-@returns — an array of Book objects
+@returns an array of Book objects
 ```
 
 ---
