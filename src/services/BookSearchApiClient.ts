@@ -3,8 +3,8 @@ import {
   BooksApiResponse,
   Book,
   BookApiObject,
-} from "./types/BookSearchApi.type";
-import { isBooksApiResponse } from "./utils/type-guards";
+} from "../types/BookSearchApi.type";
+import { isBooksApiResponse } from "../utils/type-guards";
 
 export class BookSearchApiClient {
   format: BookFormatType;

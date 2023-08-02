@@ -1,4 +1,4 @@
-import { BookSearchApiClient } from "./BookSearchApiClient";
+import { BookSearchApiClient } from "./services/BookSearchApiClient";
 
 async function retrieveData(): Promise<void> {
   const bookSearchService = new BookSearchApiClient("json");

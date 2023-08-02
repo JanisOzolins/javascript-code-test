@@ -1,4 +1,4 @@
-import { BookSearchApiClient } from "../BookSearchApiClient";
+import { BookSearchApiClient } from "../services/BookSearchApiClient";
 import {
   markTwainJsonMockResponse,
   markTwainTextResponse,
