@@ -4,7 +4,7 @@
 
 To build the application please run `npm i` followed by `npm run build`
 
-To run unit tests, please run `npm run test``
+To run unit tests, please run `npm run test`
 
 ## Endpoints
 
